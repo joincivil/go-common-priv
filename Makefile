@@ -65,12 +65,16 @@ install-gorunpkg: ## Installs the gorunpkg command
 install-gorm: ## Installs gorm package
 	@$(GOGET) -u github.com/jinzhu/gorm
 
+.PHONY: install-gormmigrate
+install-gormmigrate:
+	@$(GOGET) -u gopkg.in/gormigrate.v1
+
 .PHONY: install-pq
 install-pq: ## Installs gorm package
 	@$(GOGET) -u github.com/lib/pq
 
 .PHONY: setup
-setup: check-go-env install-dep install-linter install-cover install-gorunpkg install-pq install-gorm ## Sets up the tooling.
+setup: check-go-env install-dep install-linter install-cover install-gorunpkg install-pq install-gorm install-gormmigrate ## Sets up the tooling.
 
 .PHONY: postgres-setup-launch
 postgres-setup-launch:

@@ -8,5 +8,5 @@ import (
 )
 
 func MigrateModels(db *gorm.DB) error {
-	return db.AutoMigrate(&newsroom.Newsroom{}, &article.Article{}).Error
+	return db.AutoMigrate(&newsroom.NewsroomGorm{}, &article.ArticleGorm{}).Error
 }
