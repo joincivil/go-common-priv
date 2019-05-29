@@ -36,5 +36,5 @@ func GetTestDBConnection() DBCreds {
 	}
 
 	return creds
-	
+
 }

@@ -62,19 +62,19 @@ func (a *Gorm) PopulateFromArticle(article *Article) error {
 	if metaerr != nil {
 		return metaerr
 	}
-	a.ArticleMetadata = postgres.Jsonb{metaJSON}
+	a.ArticleMetadata = postgres.Jsonb{RawMessage: metaJSON}
 
 	if article.BlockData.TxHash == (ethCommon.Hash{}) {
 		blockJSON, blockerr := json.Marshal(article.BlockData)
 		if blockerr != nil {
 			return blockerr
 		}
-		a.BlockData = postgres.Jsonb{blockJSON}
+		a.BlockData = postgres.Jsonb{RawMessage: blockJSON}
 	}
 
 	a.NewsroomAddress = article.NewsroomAddress
 	a.IndexedTimestamp = article.IndexedTimestamp
-	a.RawJSON = postgres.Jsonb{article.RawJSON}
+	a.RawJSON = postgres.Jsonb{RawMessage: article.RawJSON}
 	a.ID = article.ID
 
 	return nil
@@ -121,8 +121,8 @@ func (p *GormPGPersister) CreateArticle(article *Article) error {
 
 	articleGorm := Gorm{
 		NewsroomAddress: article.NewsroomAddress,
-		ArticleMetadata: postgres.Jsonb{metaJSON},
-		RawJSON:         postgres.Jsonb{article.RawJSON},
+		ArticleMetadata: postgres.Jsonb{RawMessage: metaJSON},
+		RawJSON:         postgres.Jsonb{RawMessage: article.RawJSON},
 	}
 
 	if err := p.DB.Create(&articleGorm).Error; err != nil {
