@@ -2,8 +2,9 @@ package article
 
 import (
 	"encoding/json"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"time"
+
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 // Contributor is someone who was part of creating an article
@@ -50,7 +51,7 @@ type Article struct {
 
 // Persister an interface for persisting articles
 type Persister interface {
-	ArticleByID(articleID int) (*Article, error)
+	ArticleByID(articleID uint) (*Article, error)
 	CreateArticle(article *Article) error
 	UpdateArticle(article *Article) error
 }
