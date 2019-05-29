@@ -12,17 +12,17 @@ func TestCreateNewsroom(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
-	defer pg.DB.Close()
-
-	cleaner := testutils.DeleteCreatedEntities(pg.DB)
-	defer cleaner()
-
-	testutils.MigrateModels(pg.DB)
-
 	if err != nil {
 		fmt.Println(err)
 		t.Errorf("threw an error making the persister")
 	}
+
+	testutils.MigrateModels(pg.DB)
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
 
 	newsrooma := &newsroom.Newsroom{
 		Name:    "Newsroom1",
@@ -55,17 +55,17 @@ func TestUpdateNewsroom(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
-	defer pg.DB.Close()
-
-	cleaner := testutils.DeleteCreatedEntities(pg.DB)
-	defer cleaner()
-
-	testutils.MigrateModels(pg.DB)
-
 	if err != nil {
 		fmt.Println(err)
 		t.Errorf("threw an error making the persister")
 	}
+
+	testutils.MigrateModels(pg.DB)
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
 
 	newsrooma := &newsroom.Newsroom{
 		Name:    "Newsroom1",
@@ -82,17 +82,17 @@ func TestAddArticle(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
-	defer pg.DB.Close()
-
-	cleaner := testutils.DeleteCreatedEntities(pg.DB)
-	defer cleaner()
-
-	testutils.MigrateModels(pg.DB)
-
 	if err != nil {
 		fmt.Println(err)
 		t.Errorf("threw an error making the persister")
 	}
+
+	testutils.MigrateModels(pg.DB)
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
 
 	newsrooma := &newsroom.Newsroom{
 		Name:    "Newsroom1",
@@ -103,7 +103,7 @@ func TestAddArticle(t *testing.T) {
 		t.Errorf("should have created a newsroom")
 	}
 
-	articleMeta := &article.ArticleMetadata{
+	articleMeta := &article.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
@@ -133,24 +133,24 @@ func TestNewsroomByID(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
-	defer pg.DB.Close()
-
-	cleaner := testutils.DeleteCreatedEntities(pg.DB)
-	defer cleaner()
-
-	testutils.MigrateModels(pg.DB)
-
 	if err != nil {
 		fmt.Println(err)
 		t.Errorf("threw an error making the persister")
 	}
+
+	testutils.MigrateModels(pg.DB)
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
 
 	newsrooma := &newsroom.Newsroom{
 		Name:    "Newsroom1",
 		Address: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
 
-	if err := pg.CreateNewsroom(newsrooma); err != nil {
+	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
 		t.Errorf("should have created a newsroom")
 	}
 

@@ -12,6 +12,11 @@ func TestCreateArticle(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
+	if err != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error making the persister")
+	}
+
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
@@ -19,12 +24,7 @@ func TestCreateArticle(t *testing.T) {
 
 	testutils.MigrateModels(pg.DB)
 
-	if err != nil {
-		fmt.Println(err)
-		t.Errorf("threw an error making the persister")
-	}
-
-	articleMeta := &article.ArticleMetadata{
+	articleMeta := &article.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
@@ -49,19 +49,19 @@ func TestArticleByID(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
-	defer pg.DB.Close()
-
-	cleaner := testutils.DeleteCreatedEntities(pg.DB)
-	defer cleaner()
-
-	testutils.MigrateModels(pg.DB)
-
 	if err != nil {
 		fmt.Println(err)
 		t.Errorf("threw an error making the persister")
 	}
 
-	articleMeta := &article.ArticleMetadata{
+	defer pg.DB.Close()
+
+	testutils.MigrateModels(pg.DB)
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
+
+	articleMeta := &article.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
@@ -89,19 +89,19 @@ func TestUpdateArticle(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
-	defer pg.DB.Close()
-
-	cleaner := testutils.DeleteCreatedEntities(pg.DB)
-	defer cleaner()
-
-	testutils.MigrateModels(pg.DB)
-
 	if err != nil {
 		fmt.Println(err)
 		t.Errorf("threw an error making the persister")
 	}
 
-	articleMeta := &article.ArticleMetadata{
+	testutils.MigrateModels(pg.DB)
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
+
+	articleMeta := &article.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}

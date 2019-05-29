@@ -20,8 +20,8 @@ type Image struct {
 	W    int
 }
 
-// ArticleMetadata is the information about an article that is indexeds
-type ArticleMetadata struct {
+// Metadata is the information about an article that is indexeds
+type Metadata struct {
 	Title               string
 	RevisionContentHash string
 	RevisionContentURL  string
@@ -42,7 +42,7 @@ type ArticleMetadata struct {
 type Article struct {
 	ID               uint
 	BlockData        ethTypes.Receipt
-	ArticleMetadata  ArticleMetadata
+	ArticleMetadata  Metadata
 	NewsroomAddress  string
 	IndexedTimestamp time.Time
 	RawJSON          json.RawMessage

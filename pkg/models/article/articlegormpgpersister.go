@@ -43,7 +43,7 @@ func (a *Gorm) ConvertToArticle() (*Article, error) {
 	}
 
 	// if it fails it probably hasnt been added yet, do nothing
-	metadata := ArticleMetadata{}
+	metadata := Metadata{}
 	if err := json.Unmarshal(a.ArticleMetadata.RawMessage, &metadata); err == nil {
 		article.ArticleMetadata = metadata
 	}
@@ -82,8 +82,7 @@ func (a *Gorm) PopulateFromArticle(article *Article) error {
 
 // GormPGPersister is a persister that uses gorm and postgres
 type GormPGPersister struct {
-	DB      *gorm.DB
-	version string
+	DB *gorm.DB
 }
 
 // NewGormPGPersister return a new persister

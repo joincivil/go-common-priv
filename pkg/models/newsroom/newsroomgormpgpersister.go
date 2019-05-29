@@ -28,10 +28,9 @@ func (Gorm) TableName() string {
 	return "newsrooms"
 }
 
-// GormPGPersister is implaments the Newsroom Persister interface
+// GormPGPersister is implements the Newsroom Persister interface
 type GormPGPersister struct {
-	DB      *gorm.DB
-	version string
+	DB *gorm.DB
 }
 
 // NewGormPGPersister takes information about the db and returns a newsroom persister that uses gorm and postgres
@@ -77,10 +76,8 @@ func (p *GormPGPersister) UpdateNewsroom(newsroom *Newsroom) error {
 	newsroomGorm.Name = newsroom.Name
 	newsroomGorm.Address = newsroom.Address
 
-	if err := p.DB.Save(&newsroomGorm).Error; err != nil {
-		return err
-	}
-	return nil
+	err := p.DB.Save(&newsroomGorm).Error
+	return err
 }
 
 // AddArticle adds an article to a newsroom with the given ID
