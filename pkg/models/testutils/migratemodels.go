@@ -7,6 +7,7 @@ import (
 	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
 )
 
+// MigrateModels makes sure the db schema is up to date when the test runs
 func MigrateModels(db *gorm.DB) error {
-	return db.AutoMigrate(&newsroom.NewsroomGorm{}, &article.ArticleGorm{}).Error
+	return db.AutoMigrate(&newsroom.Gorm{}, &article.Gorm{}).Error
 }

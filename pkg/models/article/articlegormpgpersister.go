@@ -1,14 +1,14 @@
 package article
 
 import (
+	"encoding/json"
+	"fmt"
+	ethCommon "github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/gorm/dialects/postgres"
-	"time"
-	"fmt"
-	"encoding/json"
 	"github.com/pkg/errors"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	ethCommon "github.com/ethereum/go-ethereum/common"
+	"time"
 )
 
 const (
@@ -18,7 +18,8 @@ const (
 	connMaxLifetime = time.Second * 1800 // 30 mins
 )
 
-type ArticleGorm struct {
+// Gorm is the article schema
+type Gorm struct {
 	gorm.Model
 	BlockData        postgres.Jsonb
 	ArticleMetadata  postgres.Jsonb
@@ -27,18 +28,23 @@ type ArticleGorm struct {
 	RawJSON          postgres.Jsonb
 }
 
-func(a *ArticleGorm) ConvertToArticle() (*Article, error) {
+// TableName sets the name of the corresponding table in the db
+func (Gorm) TableName() string {
+	return "articles"
+}
+
+// ConvertToArticle returns the gorm struct as the public article struct
+func (a *Gorm) ConvertToArticle() (*Article, error) {
 	article := &Article{}
 	// if it fails it probably hasnt been added yet, do nothing
 	blockdata := ethTypes.Receipt{}
 	if err := json.Unmarshal(a.BlockData.RawMessage, &blockdata); err == nil {
 		article.BlockData = blockdata
 	}
-		
 
 	// if it fails it probably hasnt been added yet, do nothing
 	metadata := ArticleMetadata{}
-	if err := json.Unmarshal(a.ArticleMetadata.RawMessage, &metadata); err == nil {	
+	if err := json.Unmarshal(a.ArticleMetadata.RawMessage, &metadata); err == nil {
 		article.ArticleMetadata = metadata
 	}
 
@@ -50,7 +56,8 @@ func(a *ArticleGorm) ConvertToArticle() (*Article, error) {
 	return article, nil
 }
 
-func(a *ArticleGorm) PopulateFromArticle(article *Article) error {
+// PopulateFromArticle takes an article struct and maps its properties onto a gorm struct
+func (a *Gorm) PopulateFromArticle(article *Article) error {
 	metaJSON, metaerr := json.Marshal(article.ArticleMetadata)
 	if metaerr != nil {
 		return metaerr
@@ -73,14 +80,15 @@ func(a *ArticleGorm) PopulateFromArticle(article *Article) error {
 	return nil
 }
 
-
-type ArticleGormPGPersister struct {
-	DB *gorm.DB
+// GormPGPersister is a persister that uses gorm and postgres
+type GormPGPersister struct {
+	DB      *gorm.DB
 	version string
 }
 
-func NewArticleGormPGPersister(host string, port int, user string, password string, dbname string)  (*ArticleGormPGPersister, error) {
-	articleGormPGPersister := &ArticleGormPGPersister{}
+// NewGormPGPersister return a new persister
+func NewGormPGPersister(host string, port int, user string, password string, dbname string) (*GormPGPersister, error) {
+	articleGormPGPersister := &GormPGPersister{}
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	db, err := gorm.Open("postgres", psqlInfo)
 	if err != nil {
@@ -94,25 +102,27 @@ func NewArticleGormPGPersister(host string, port int, user string, password stri
 	return articleGormPGPersister, nil
 }
 
-func (p *ArticleGormPGPersister) ArticleByID(articleID uint) (*Article, error) {
-	articleGorm := &ArticleGorm{}
+// ArticleByID finds an article by its ID
+func (p *GormPGPersister) ArticleByID(articleID uint) (*Article, error) {
+	articleGorm := &Gorm{}
 	if err := p.DB.First(articleGorm, articleID).Error; err != nil {
 		return nil, err
 	}
-	
+
 	return articleGorm.ConvertToArticle()
 }
 
-func (p *ArticleGormPGPersister) CreateArticle(article *Article) error {
+// CreateArticle saves an article to the db
+func (p *GormPGPersister) CreateArticle(article *Article) error {
 	metaJSON, err := json.Marshal(article.ArticleMetadata)
 	if err != nil {
 		return err
 	}
 
-	articleGorm := ArticleGorm{
+	articleGorm := Gorm{
 		NewsroomAddress: article.NewsroomAddress,
 		ArticleMetadata: postgres.Jsonb{metaJSON},
-		RawJSON: postgres.Jsonb{article.RawJSON},
+		RawJSON:         postgres.Jsonb{article.RawJSON},
 	}
 
 	if err := p.DB.Create(&articleGorm).Error; err != nil {
@@ -123,8 +133,9 @@ func (p *ArticleGormPGPersister) CreateArticle(article *Article) error {
 	return nil
 }
 
-func (p *ArticleGormPGPersister) UpdateArticle(article *Article) error {
-	articleGorm := ArticleGorm{}
+// UpdateArticle saves updates to an article stuct
+func (p *GormPGPersister) UpdateArticle(article *Article) error {
+	articleGorm := Gorm{}
 
 	articleGorm.PopulateFromArticle(article)
 

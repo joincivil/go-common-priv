@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/postgres" // need the driver
 )
 
+// DeleteCreatedEntities sets up a hook to clean up the db after the test
 func DeleteCreatedEntities(db *gorm.DB) func() {
 	type entity struct {
 		table   string

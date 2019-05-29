@@ -2,28 +2,28 @@ package newsroom_test
 
 import (
 	"fmt"
-	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
+	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
 	"testing"
 )
 
 const (
-	postgressHost = "localhost"
-	postgressPort=5432
-	postgressUser="docker"
-	postgressPassword="docker"
-	dbname="civil_crawler"
+	postgressHost     = "localhost"
+	postgressPort     = 5432
+	postgressUser     = "docker"
+	postgressPassword = "docker"
+	dbname            = "civil_crawler"
 )
 
 func TestCreateNewsroom(t *testing.T) {
-	pg, err := newsroom.NewNewsroomGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
 
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
-	
+
 	testutils.MigrateModels(pg.DB)
 
 	if err != nil {
@@ -59,13 +59,13 @@ func TestCreateNewsroom(t *testing.T) {
 }
 
 func TestUpdateNewsroom(t *testing.T) {
-	pg, err := newsroom.NewNewsroomGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
 
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
-	
+
 	testutils.MigrateModels(pg.DB)
 
 	if err != nil {
@@ -85,13 +85,13 @@ func TestUpdateNewsroom(t *testing.T) {
 }
 
 func TestAddArticle(t *testing.T) {
-	pg, err := newsroom.NewNewsroomGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
 
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
-	
+
 	testutils.MigrateModels(pg.DB)
 
 	if err != nil {
@@ -109,7 +109,7 @@ func TestAddArticle(t *testing.T) {
 	}
 
 	articleMeta := &article.ArticleMetadata{
-		Title: "new stufff",
+		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
@@ -125,10 +125,9 @@ func TestAddArticle(t *testing.T) {
 	articles, articleErr := pg.GetArticlesForNewsroom(newsrooma.ID)
 
 	if articleErr != nil {
+		fmt.Println(articleErr)
 		t.Errorf("couldnt get articles")
 	}
-	
-	fmt.Println(len(articles))
 
 	if len(articles) != 1 {
 		t.Errorf("article wasnt added")
@@ -136,13 +135,13 @@ func TestAddArticle(t *testing.T) {
 }
 
 func TestNewsroomByID(t *testing.T) {
-	pg, err := newsroom.NewNewsroomGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
 
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
-	
+
 	testutils.MigrateModels(pg.DB)
 
 	if err != nil {
@@ -175,7 +174,3 @@ func TestNewsroomByID(t *testing.T) {
 	}
 
 }
-
-// func GetArticlesForNewsroom(t *testing.T) {
-
-// }

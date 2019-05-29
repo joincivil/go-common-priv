@@ -1,29 +1,29 @@
 package article_test
 
 import (
+	"fmt"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"fmt"
 	"testing"
 )
 
 const (
-	postgressHost = "localhost"
-	postgressPort=5432
-	postgressUser="docker"
-	postgressPassword="docker"
-	dbname="civil_crawler"
+	postgressHost     = "localhost"
+	postgressPort     = 5432
+	postgressUser     = "docker"
+	postgressPassword = "docker"
+	dbname            = "civil_crawler"
 )
 
 func TestCreateArticle(t *testing.T) {
-	pg, err := article.NewArticleGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	pg, err := article.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
 
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
-	
+
 	testutils.MigrateModels(pg.DB)
 
 	if err != nil {
@@ -32,7 +32,7 @@ func TestCreateArticle(t *testing.T) {
 	}
 
 	articleMeta := &article.ArticleMetadata{
-		Title: "new stufff",
+		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
@@ -53,13 +53,13 @@ func TestCreateArticle(t *testing.T) {
 }
 
 func TestArticleByID(t *testing.T) {
-	pg, err := article.NewArticleGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	pg, err := article.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
 
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
-	
+
 	testutils.MigrateModels(pg.DB)
 
 	if err != nil {
@@ -68,7 +68,7 @@ func TestArticleByID(t *testing.T) {
 	}
 
 	articleMeta := &article.ArticleMetadata{
-		Title: "new stufff",
+		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
@@ -92,13 +92,13 @@ func TestArticleByID(t *testing.T) {
 }
 
 func TestUpdateArticle(t *testing.T) {
-	pg, err := article.NewArticleGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	pg, err := article.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
 
 	defer pg.DB.Close()
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
-	
+
 	testutils.MigrateModels(pg.DB)
 
 	if err != nil {
@@ -107,7 +107,7 @@ func TestUpdateArticle(t *testing.T) {
 	}
 
 	articleMeta := &article.ArticleMetadata{
-		Title: "new stufff",
+		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
@@ -120,10 +120,10 @@ func TestUpdateArticle(t *testing.T) {
 
 	foundarticle, _ := pg.ArticleByID(narticle.ID)
 
-	blockData := ethTypes.Receipt {
+	blockData := ethTypes.Receipt{
 		GasUsed: 7000000,
 	}
-	
+
 	foundarticle.BlockData = blockData
 
 	if err := pg.UpdateArticle(foundarticle); err != nil {

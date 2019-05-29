@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
-	"time"
 	"github.com/pkg/errors"
+	"time"
 )
 
 const (
@@ -15,20 +15,28 @@ const (
 	connMaxLifetime = time.Second * 1800 // 30 mins
 )
 
-type NewsroomGorm struct {
+// Gorm is the newsroom schema
+type Gorm struct {
 	gorm.Model
 	Name     string
-	Address  string            `gorm:"unique;not null"`
-	Articles []article.ArticleGorm `gorm:"foreignkey:NewsroomAddress;association_foreignkey:Address"`
+	Address  string         `gorm:"unique;not null"`
+	Articles []article.Gorm `gorm:"foreignkey:NewsroomAddress;association_foreignkey:Address"`
 }
 
-type NewsroomGormPGPersister struct {
-	DB *gorm.DB
+// TableName sets the name of the corresponding table in the db
+func (Gorm) TableName() string {
+	return "newsrooms"
+}
+
+// GormPGPersister is implaments the Newsroom Persister interface
+type GormPGPersister struct {
+	DB      *gorm.DB
 	version string
 }
 
-func NewNewsroomGormPGPersister(host string, port int, user string, password string, dbname string)  (*NewsroomGormPGPersister, error) {
-	newsroomGormPGPersister := &NewsroomGormPGPersister{}
+// NewGormPGPersister takes information about the db and returns a newsroom persister that uses gorm and postgres
+func NewGormPGPersister(host string, port int, user string, password string, dbname string) (*GormPGPersister, error) {
+	newsroomGormPGPersister := &GormPGPersister{}
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	db, err := gorm.Open("postgres", psqlInfo)
 	if err != nil {
@@ -42,9 +50,10 @@ func NewNewsroomGormPGPersister(host string, port int, user string, password str
 	return newsroomGormPGPersister, nil
 }
 
-func(p *NewsroomGormPGPersister) CreateNewsroom(newsroom *Newsroom) error {
-	newsroomGorm := NewsroomGorm{
-		Name: newsroom.Name,
+// CreateNewsroom takes a newsroom struct and saves it to the db
+func (p *GormPGPersister) CreateNewsroom(newsroom *Newsroom) error {
+	newsroomGorm := Gorm{
+		Name:    newsroom.Name,
 		Address: newsroom.Address,
 	}
 
@@ -53,12 +62,13 @@ func(p *NewsroomGormPGPersister) CreateNewsroom(newsroom *Newsroom) error {
 	}
 
 	newsroom.ID = newsroomGorm.ID
-	
+
 	return nil
 }
 
-func(p *NewsroomGormPGPersister) UpdateNewsroom(newsroom *Newsroom) error {
-	newsroomGorm := NewsroomGorm{}
+// UpdateNewsroom takes a newsroom struct that has an id and updates it with new values
+func (p *GormPGPersister) UpdateNewsroom(newsroom *Newsroom) error {
+	newsroomGorm := Gorm{}
 
 	if err := p.DB.First(&newsroomGorm, newsroom.ID).Error; err != nil {
 		return err
@@ -73,12 +83,13 @@ func(p *NewsroomGormPGPersister) UpdateNewsroom(newsroom *Newsroom) error {
 	return nil
 }
 
-func(p *NewsroomGormPGPersister) AddArticle(newsroomID uint, newArticle *article.Article) error {
-	newsroomGorm := NewsroomGorm{}
+// AddArticle adds an article to a newsroom with the given ID
+func (p *GormPGPersister) AddArticle(newsroomID uint, newArticle *article.Article) error {
+	newsroomGorm := Gorm{}
 
-	articleGorm := article.ArticleGorm{}
+	articleGorm := article.Gorm{}
 	if err := articleGorm.PopulateFromArticle(newArticle); err != nil {
-		return err;
+		return err
 	}
 
 	if err := p.DB.First(&newsroomGorm, newsroomID).Error; err != nil {
@@ -92,8 +103,9 @@ func(p *NewsroomGormPGPersister) AddArticle(newsroomID uint, newArticle *article
 	return nil
 }
 
-func(p *NewsroomGormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error) {
-	newsroomGorm := NewsroomGorm{}
+// NewsroomByID returns the newsroom with the given ID if its found
+func (p *GormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error) {
+	newsroomGorm := Gorm{}
 
 	if err := p.DB.First(&newsroomGorm, newsroomID).Error; err != nil {
 		return nil, err
@@ -107,19 +119,16 @@ func(p *NewsroomGormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error
 	return newsroom, nil
 }
 
-func(p *NewsroomGormPGPersister) GetArticlesForNewsroom(newsroomID uint)  ([]article.Article, error) {
-	newsroomGorm := NewsroomGorm{}
+// GetArticlesForNewsroom returns all the articles for a newsroom with the given ID
+func (p *GormPGPersister) GetArticlesForNewsroom(newsroomID uint) ([]article.Article, error) {
+	newsroomGorm := Gorm{}
 
-	if err := p.DB.First(&newsroomGorm, newsroomID).Error; err != nil {
-		return nil, err
-	}
-
-	if err := p.DB.Model(&newsroomGorm).Related(&article.ArticleGorm{}).Error; err != nil {
+	if err := p.DB.Preload("Articles").First(&newsroomGorm, newsroomID).Error; err != nil {
 		return nil, err
 	}
 	articles := make([]article.Article, len(newsroomGorm.Articles))
 
-	for i, a := range newsroom.Articles {
+	for i, a := range newsroomGorm.Articles {
 		convertedArticle, err := a.ConvertToArticle()
 		if err != nil {
 			return nil, err
@@ -129,5 +138,3 @@ func(p *NewsroomGormPGPersister) GetArticlesForNewsroom(newsroomID uint)  ([]art
 
 	return articles, nil
 }
-
-
