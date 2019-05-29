@@ -137,10 +137,13 @@ func (p *GormPGPersister) CreateArticle(article *Article) error {
 func (p *GormPGPersister) UpdateArticle(article *Article) error {
 	articleGorm := Gorm{}
 
-	articleGorm.PopulateFromArticle(article)
+	if err := articleGorm.PopulateFromArticle(article); err != nil {
+		return err
+	}
 
 	if err := p.DB.Save(&articleGorm).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
