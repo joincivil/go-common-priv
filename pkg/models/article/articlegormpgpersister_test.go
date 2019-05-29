@@ -8,16 +8,9 @@ import (
 	"testing"
 )
 
-const (
-	postgressHost     = "localhost"
-	postgressPort     = 5432
-	postgressUser     = "docker"
-	postgressPassword = "docker"
-	dbname            = "civil_crawler"
-)
-
 func TestCreateArticle(t *testing.T) {
-	pg, err := article.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	creds := testutils.GetTestDBConnection()
+	pg, err := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
 	defer pg.DB.Close()
 
@@ -53,7 +46,8 @@ func TestCreateArticle(t *testing.T) {
 }
 
 func TestArticleByID(t *testing.T) {
-	pg, err := article.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	creds := testutils.GetTestDBConnection()
+	pg, err := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
 	defer pg.DB.Close()
 
@@ -92,7 +86,8 @@ func TestArticleByID(t *testing.T) {
 }
 
 func TestUpdateArticle(t *testing.T) {
-	pg, err := article.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	creds := testutils.GetTestDBConnection()
+	pg, err := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
 	defer pg.DB.Close()
 

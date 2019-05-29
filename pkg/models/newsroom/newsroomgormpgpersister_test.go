@@ -8,16 +8,9 @@ import (
 	"testing"
 )
 
-const (
-	postgressHost     = "localhost"
-	postgressPort     = 5432
-	postgressUser     = "docker"
-	postgressPassword = "docker"
-	dbname            = "civil_crawler"
-)
-
 func TestCreateNewsroom(t *testing.T) {
-	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
 	defer pg.DB.Close()
 
@@ -59,7 +52,8 @@ func TestCreateNewsroom(t *testing.T) {
 }
 
 func TestUpdateNewsroom(t *testing.T) {
-	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
 	defer pg.DB.Close()
 
@@ -85,7 +79,8 @@ func TestUpdateNewsroom(t *testing.T) {
 }
 
 func TestAddArticle(t *testing.T) {
-	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
 	defer pg.DB.Close()
 
@@ -135,7 +130,8 @@ func TestAddArticle(t *testing.T) {
 }
 
 func TestNewsroomByID(t *testing.T) {
-	pg, err := newsroom.NewGormPGPersister(postgressHost, postgressPort, postgressUser, postgressPassword, dbname)
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
 
 	defer pg.DB.Close()
 
