@@ -5,10 +5,10 @@ defaults: &defaults
       # CircleCI Go images available at: https://hub.docker.com/r/circleci/golang/
       - image: circleci/golang:1.11.1
       # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
-      # - image: circleci/postgres:9.4.12-alpine
-      #   environment:
-      #     POSTGRES_USER: root
-      #     POSTGRES_DB: circle_test
+      - image: circleci/postgres:9.4.12-alpine
+        environment:
+          POSTGRES_USER: root
+          POSTGRES_DB: circle_test
 jobs:
   build:
     <<: *defaults
@@ -31,16 +31,16 @@ jobs:
       - run:
            name: Setting up tools
            command: make check-go-env
-      # - run:
-      #     name: Waiting for Postgres to be ready
-      #     command: |
-      #       for i in `seq 1 10`;
-      #       do
-      #         nc -z localhost 5432 && echo Success && exit 0
-      #         echo -n .
-      #         sleep 1
-      #       done
-      #       echo Failed waiting for Postgres && exit 1
+      - run:
+          name: Waiting for Postgres to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 5432 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Postgres && exit 1
       - run:
           name: Building code
           command: make build
@@ -78,8 +78,8 @@ jobs:
             at: ./
         - run:
             name: Run unit tests
-            # environment:
-            #    DB_URL: "postgres://root@localhost:5432/circle_test?sslmode=disable"
+            environment:
+               DB_URL: "postgres://root@localhost:5432/circle_test?sslmode=disable"
             #    DB_MIGRATIONS: /go/src/github.com/joincivil/go-common/migrations
             command: |
                make test
