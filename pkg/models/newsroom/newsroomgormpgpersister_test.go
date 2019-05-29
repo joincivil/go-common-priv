@@ -2,10 +2,11 @@ package newsroom_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
-	"testing"
 )
 
 func TestCreateNewsroom(t *testing.T) {
@@ -17,7 +18,7 @@ func TestCreateNewsroom(t *testing.T) {
 		t.Errorf("threw an error making the persister")
 	}
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	defer pg.DB.Close()
 
@@ -60,7 +61,7 @@ func TestUpdateNewsroom(t *testing.T) {
 		t.Errorf("threw an error making the persister")
 	}
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	defer pg.DB.Close()
 
@@ -87,7 +88,7 @@ func TestAddArticle(t *testing.T) {
 		t.Errorf("threw an error making the persister")
 	}
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	defer pg.DB.Close()
 
@@ -138,7 +139,7 @@ func TestNewsroomByID(t *testing.T) {
 		t.Errorf("threw an error making the persister")
 	}
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	defer pg.DB.Close()
 
