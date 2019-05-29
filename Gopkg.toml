@@ -27,7 +27,9 @@
 
 [[constraint]]
   name = "github.com/ethereum/go-ethereum"
-  version = "1.8.27"
+  # TODO: Check if next version contains required updates,
+  # switch to next version when it is released
+  revision = "008d250e3c57e1b8a350c8049fe4af71cf26a7e9"
 
 [[constraint]]
   name = "github.com/jinzhu/gorm"
@@ -40,3 +42,7 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+  [[prune.project]]
+  name = "github.com/ethereum/go-ethereum"
+  unused-packages = false
