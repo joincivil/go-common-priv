@@ -2,11 +2,22 @@ package article_test
 
 import (
 	"fmt"
+	"testing"
+
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
-	"testing"
 )
+
+func testFunc(persister article.Persister) {
+}
+
+func TestGormInterface(t *testing.T) {
+	// Ensure the GORM persister implements the Persister interface
+	creds := testutils.GetTestDBConnection()
+	pg, _ := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+	testFunc(pg)
+}
 
 func TestCreateArticle(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
