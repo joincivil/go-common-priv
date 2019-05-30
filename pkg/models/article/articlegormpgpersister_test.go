@@ -33,7 +33,7 @@ func TestCreateArticle(t *testing.T) {
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	articleMeta := &article.Metadata{
 		Title:        "new stufff",
@@ -49,7 +49,7 @@ func TestCreateArticle(t *testing.T) {
 		t.Errorf("new article shouldnt have an id yet")
 	}
 
-	pg.CreateArticle(narticle)
+	pg.CreateArticle(narticle) //nolint:errcheck
 
 	if narticle.ID == 0 {
 		t.Errorf("an id should be assigned to the narticle after save")
@@ -67,7 +67,7 @@ func TestArticleByID(t *testing.T) {
 
 	defer pg.DB.Close()
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
@@ -82,7 +82,7 @@ func TestArticleByID(t *testing.T) {
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
 
-	pg.CreateArticle(narticle)
+	pg.CreateArticle(narticle) // nolint: errcheck
 
 	foundarticle, lookuperr := pg.ArticleByID(narticle.ID)
 
@@ -105,7 +105,7 @@ func TestUpdateArticle(t *testing.T) {
 		t.Errorf("threw an error making the persister")
 	}
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	defer pg.DB.Close()
 
@@ -122,7 +122,7 @@ func TestUpdateArticle(t *testing.T) {
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
 
-	pg.CreateArticle(narticle)
+	pg.CreateArticle(narticle) // nolint: errcheck
 
 	foundarticle, _ := pg.ArticleByID(narticle.ID)
 
