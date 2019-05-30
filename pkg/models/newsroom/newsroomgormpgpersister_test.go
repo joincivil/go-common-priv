@@ -2,11 +2,22 @@ package newsroom_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
-	"testing"
 )
+
+func testFunc(persister newsroom.Persister) {
+}
+
+func TestGormInterface(t *testing.T) {
+	// Ensure the GORM persister implements the Persister interface
+	creds := testutils.GetTestDBConnection()
+	pg, _ := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+	testFunc(pg)
+}
 
 func TestCreateNewsroom(t *testing.T) {
 	creds := testutils.GetTestDBConnection()

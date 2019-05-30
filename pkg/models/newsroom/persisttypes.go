@@ -16,7 +16,7 @@ type Newsroom struct {
 type Persister interface {
 	CreateNewsroom(newsroom *Newsroom) error
 	UpdateNewsroom(newsroom *Newsroom) error
-	AddArticle(article *article.Article) error
+	AddArticle(newsroomID uint, article *article.Article) error
 	NewsroomByID(newsroomID uint) (*Newsroom, error)
 	GetArticlesForNewsroom(newsroomID uint) ([]article.Article, error)
 }
