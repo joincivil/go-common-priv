@@ -9,6 +9,16 @@ import (
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
 )
 
+func testFunc(persister newsroom.Persister) {
+}
+
+func TestGormInterface(t *testing.T) {
+	// Ensure the GORM persister implements the Persister interface
+	creds := testutils.GetTestDBConnection()
+	pg, _ := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+	testFunc(pg)
+}
+
 func TestCreateNewsroom(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
