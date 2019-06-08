@@ -101,6 +101,27 @@ func (p *GormPGPersister) AddArticle(newsroomID uint, newArticle *article.Articl
 	return nil
 }
 
+// Newsrooms returns the list of newsrooms
+func (p *GormPGPersister) Newsrooms() ([]*Newsroom, error) {
+	newsroomGorms := []Gorm{}
+
+	if err := p.DB.Find(&newsroomGorms).Error; err != nil {
+		return nil, err
+	}
+
+	newsrooms := make([]*Newsroom, len(newsroomGorms))
+	for ind, nr := range newsroomGorms {
+		newsroom := &Newsroom{}
+		newsroom.ID = nr.ID
+		newsroom.Name = nr.Name
+		newsroom.Address = nr.Address
+
+		newsrooms[ind] = newsroom
+	}
+
+	return newsrooms, nil
+}
+
 // NewsroomByID returns the newsroom with the given ID if its found
 func (p *GormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error) {
 	newsroomGorm := Gorm{}

@@ -141,6 +141,79 @@ func TestAddArticle(t *testing.T) {
 	}
 }
 
+func TestNewsrooms(t *testing.T) {
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+
+	if err != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error making the persister")
+	}
+
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
+
+	newsrooma := &newsroom.Newsroom{
+		Name:    "Newsroom1",
+		Address: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
+		t.Errorf("should have created a newsroom1")
+	}
+
+	newsrooma = &newsroom.Newsroom{
+		Name:    "Newsroom2",
+		Address: "0x9c722B8AF728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
+		t.Errorf("should have created a newsroom2")
+	}
+
+	newsrooma = &newsroom.Newsroom{
+		Name:    "Newsroom3",
+		Address: "0x9d822B8AF728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
+		t.Errorf("should have created a newsroom3")
+	}
+
+	newsrooms, err := pg.Newsrooms()
+	if err != nil {
+		t.Errorf("should have retrieved newsrooms: %v", err)
+	}
+
+	if len(newsrooms) != 3 {
+		t.Errorf("should have retrieved 3 newsrooms: len: %v", len(newsrooms))
+	}
+
+	if newsrooms[0].Name != "Newsroom1" {
+		t.Errorf("should have gotten Newsroom1")
+	}
+	if newsrooms[0].Address != "0x8c722B8AC728aDd7780a66017e8daDBa530EE261" {
+		t.Errorf("should have gotten Newsroom1 address")
+	}
+	if newsrooms[1].Name != "Newsroom2" {
+		t.Errorf("should have gotten Newsroom2")
+	}
+	if newsrooms[1].Address != "0x9c722B8AF728aDd7780a66017e8daDBa530EE261" {
+		t.Errorf("should have gotten Newsroom2 address")
+	}
+	if newsrooms[2].Name != "Newsroom3" {
+		t.Errorf("should have gotten Newsroom3")
+	}
+	if newsrooms[2].Address != "0x9d822B8AF728aDd7780a66017e8daDBa530EE261" {
+		t.Errorf("should have gotten Newsroom3 address")
+	}
+
+}
+
 func TestNewsroomByID(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
 	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
@@ -192,7 +265,7 @@ func TestGetLatestArticleForNewsroom(t *testing.T) {
 		t.Errorf("threw an error making the persister")
 	}
 
-	testutils.MigrateModels(pg.DB)
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
 	defer pg.DB.Close()
 
@@ -206,6 +279,11 @@ func TestGetLatestArticleForNewsroom(t *testing.T) {
 
 	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
 		t.Errorf("should have created a newsroom")
+	}
+
+	_, err = pg.GetLatestArticleForNewsroom(newsrooma.ID)
+	if err == nil {
+		t.Errorf("should have gotten error")
 	}
 
 	now := time.Now()
@@ -255,9 +333,9 @@ func TestGetLatestArticleForNewsroom(t *testing.T) {
 		t.Errorf("failed to add old article")
 	}
 
-	art, err1 := pg.GetLatestArticleForNewsroom(newsrooma.ID)
-	if err1 != nil {
-		t.Errorf("failed to get latest article: %v", err1)
+	art, err := pg.GetLatestArticleForNewsroom(newsrooma.ID)
+	if err != nil {
+		t.Errorf("failed to get latest article: %v", err)
 	}
 
 	if art.ArticleMetadata.Title != "new stufff latest" {
