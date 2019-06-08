@@ -19,4 +19,5 @@ type Persister interface {
 	AddArticle(newsroomID uint, article *article.Article) error
 	NewsroomByID(newsroomID uint) (*Newsroom, error)
 	GetArticlesForNewsroom(newsroomID uint) ([]article.Article, error)
+	GetLatestArticleForNewsroom(newsroomID uint) (*article.Article, error)
 }

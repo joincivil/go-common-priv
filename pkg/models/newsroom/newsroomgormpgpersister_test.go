@@ -3,6 +3,7 @@ package newsroom_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
@@ -180,4 +181,86 @@ func TestNewsroomByID(t *testing.T) {
 		t.Errorf("isn't the same newsroom")
 	}
 
+}
+
+func TestGetLatestArticleForNewsroom(t *testing.T) {
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+
+	if err != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error making the persister")
+	}
+
+	testutils.MigrateModels(pg.DB)
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
+
+	newsrooma := &newsroom.Newsroom{
+		Name:    "Newsroom1",
+		Address: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
+		t.Errorf("should have created a newsroom")
+	}
+
+	now := time.Now()
+
+	articleMeta := &article.Metadata{
+		Title:        "new stufff latest",
+		CanonicalURL: "https://newstuff.bz/newarticle",
+		RevisionDate: now.Add(30 * time.Second),
+	}
+
+	narticle := &article.Article{
+		ArticleMetadata: *articleMeta,
+		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.AddArticle(newsrooma.ID, narticle); err1 != nil {
+		t.Errorf("failed to add latest article")
+	}
+
+	articleMeta = &article.Metadata{
+		Title:        "new stufff old",
+		CanonicalURL: "https://newstuff.bz/newarticle",
+		RevisionDate: now,
+	}
+
+	narticle = &article.Article{
+		ArticleMetadata: *articleMeta,
+		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.AddArticle(newsrooma.ID, narticle); err1 != nil {
+		t.Errorf("failed to add old article")
+	}
+
+	articleMeta = &article.Metadata{
+		Title:        "new stufff mid",
+		CanonicalURL: "https://newstuff.bz/newarticle",
+		RevisionDate: now.Add(15 * time.Second),
+	}
+
+	narticle = &article.Article{
+		ArticleMetadata: *articleMeta,
+		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.AddArticle(newsrooma.ID, narticle); err1 != nil {
+		t.Errorf("failed to add old article")
+	}
+
+	art, err1 := pg.GetLatestArticleForNewsroom(newsrooma.ID)
+	if err1 != nil {
+		t.Errorf("failed to get latest article: %v", err1)
+	}
+
+	if art.ArticleMetadata.Title != "new stufff latest" {
+		t.Errorf("failed to fetch the latest article: %v", art.ArticleMetadata.Title)
+	}
 }
