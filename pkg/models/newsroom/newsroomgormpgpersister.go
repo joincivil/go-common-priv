@@ -2,10 +2,11 @@ package newsroom
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/jinzhu/gorm"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/pkg/errors"
-	"time"
 )
 
 const (
@@ -100,6 +101,27 @@ func (p *GormPGPersister) AddArticle(newsroomID uint, newArticle *article.Articl
 	return nil
 }
 
+// Newsrooms returns the list of newsrooms
+func (p *GormPGPersister) Newsrooms() ([]*Newsroom, error) {
+	newsroomGorms := []Gorm{}
+
+	if err := p.DB.Find(&newsroomGorms).Error; err != nil {
+		return nil, err
+	}
+
+	newsrooms := make([]*Newsroom, len(newsroomGorms))
+	for ind, nr := range newsroomGorms {
+		newsroom := &Newsroom{}
+		newsroom.ID = nr.ID
+		newsroom.Name = nr.Name
+		newsroom.Address = nr.Address
+
+		newsrooms[ind] = newsroom
+	}
+
+	return newsrooms, nil
+}
+
 // NewsroomByID returns the newsroom with the given ID if its found
 func (p *GormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error) {
 	newsroomGorm := Gorm{}
@@ -134,4 +156,29 @@ func (p *GormPGPersister) GetArticlesForNewsroom(newsroomID uint) ([]article.Art
 	}
 
 	return articles, nil
+}
+
+// GetLatestArticleForNewsroom returns the latest article for a newsroom with the given ID
+func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*article.Article, error) {
+	newsroomGorm := Gorm{}
+
+	sortFunc := func(db *gorm.DB) *gorm.DB {
+		return db.Limit(1).Order("articles.article_metadata->>'RevisionDate' DESC")
+	}
+
+	if err := p.DB.Preload("Articles", sortFunc).First(&newsroomGorm, newsroomID).Error; err != nil {
+		return nil, err
+	}
+
+	if len(newsroomGorm.Articles) == 0 {
+		return nil, errors.New("no article found")
+	}
+
+	art := newsroomGorm.Articles[0]
+	convertedArticle, err := art.ConvertToArticle()
+	if err != nil {
+		return nil, err
+	}
+
+	return convertedArticle, nil
 }
