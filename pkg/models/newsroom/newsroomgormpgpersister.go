@@ -9,6 +9,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	// NoArticlesErr indicates that there were no articles found for the query
+	NoArticlesErr = errors.New("no articles found")
+)
+
 const (
 	// Could make this configurable later if needed
 	maxOpenConns    = 50
@@ -171,7 +176,7 @@ func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*article
 	}
 
 	if len(newsroomGorm.Articles) == 0 {
-		return nil, errors.New("no article found")
+		return nil, NoArticlesErr
 	}
 
 	art := newsroomGorm.Articles[0]
