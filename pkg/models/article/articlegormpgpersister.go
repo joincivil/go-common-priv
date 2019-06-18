@@ -64,7 +64,7 @@ func (a *Gorm) PopulateFromArticle(article *Article) error {
 	}
 	a.ArticleMetadata = postgres.Jsonb{RawMessage: metaJSON}
 
-	if article.BlockData.TxHash == (ethCommon.Hash{}) {
+	if article.BlockData.TxHash != (ethCommon.Hash{}) {
 		blockJSON, blockerr := json.Marshal(article.BlockData)
 		if blockerr != nil {
 			return blockerr
