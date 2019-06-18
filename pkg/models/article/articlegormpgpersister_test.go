@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
 )
@@ -126,14 +126,17 @@ func TestUpdateArticle(t *testing.T) {
 
 	foundarticle, _ := pg.ArticleByID(narticle.ID)
 
-	blockData := ethTypes.Receipt{
-		GasUsed: 7000000,
-	}
+	blockData := testutils.MakeFakeReceipt()
 
 	foundarticle.BlockData = blockData
 
 	if err := pg.UpdateArticle(foundarticle); err != nil {
 		fmt.Println(err)
 		t.Errorf("error saving article")
+	}
+
+	refetchArticle, _ := pg.ArticleByID(narticle.ID)
+	if refetchArticle.BlockData.TxHash == (ethCommon.Hash{}) {
+		t.Errorf("should have saved the new tx receipt")
 	}
 }
