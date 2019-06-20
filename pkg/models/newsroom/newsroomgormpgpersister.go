@@ -55,6 +55,14 @@ func NewGormPGPersister(host string, port int, user string, password string, dbn
 	return newsroomGormPGPersister, nil
 }
 
+// NewGormPGPersisterWithDB uses an existing gorm.DB struct to create a new GormPGPersister.
+// This is useful if we want to reuse existing connections
+func NewGormPGPersisterWithDB(db *gorm.DB) (*GormPGPersister, error) {
+	newsroomGormPGPersister := &GormPGPersister{}
+	newsroomGormPGPersister.DB = db
+	return newsroomGormPGPersister, nil
+}
+
 // CreateNewsroom takes a newsroom struct and saves it to the db
 func (p *GormPGPersister) CreateNewsroom(newsroom *Newsroom) error {
 	newsroomGorm := Gorm{

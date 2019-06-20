@@ -3,12 +3,13 @@ package article
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/pkg/errors"
-	"time"
 )
 
 const (
@@ -99,6 +100,14 @@ func NewGormPGPersister(host string, port int, user string, password string, dbn
 	articleGormPGPersister.DB.DB().SetMaxIdleConns(maxIdleConns)
 	articleGormPGPersister.DB.DB().SetConnMaxLifetime(connMaxLifetime)
 	return articleGormPGPersister, nil
+}
+
+// NewGormPGPersisterWithDB uses an existing gorm.DB struct to create a new GormPGPersister.
+// This is useful if we want to reuse existing connections
+func NewGormPGPersisterWithDB(db *gorm.DB) (*GormPGPersister, error) {
+	newsroomGormPGPersister := &GormPGPersister{}
+	newsroomGormPGPersister.DB = db
+	return newsroomGormPGPersister, nil
 }
 
 // ArticleByID finds an article by its ID
