@@ -3,10 +3,13 @@ package article_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
+
+	gormutils "github.com/joincivil/go-common-priv/pkg/utils/gorm"
 )
 
 func testFunc(persister article.Persister) {
@@ -21,7 +24,15 @@ func TestGormInterface(t *testing.T) {
 
 func TestCreateArticle(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
-	pg, err := article.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+	// Test out the WithDB GormPGPersister constructor
+	db, err := gormutils.NewGormPGConnection(creds.Host, creds.Port, creds.User,
+		creds.Password, creds.Dbname, 2, 2, 10*time.Second)
+	if err != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error creating the db conn")
+	}
+
+	pg, err := article.NewGormPGPersisterWithDB(db)
 
 	if err != nil {
 		fmt.Println(err)

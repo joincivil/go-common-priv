@@ -8,6 +8,8 @@ import (
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
+
+	gormutils "github.com/joincivil/go-common-priv/pkg/utils/gorm"
 )
 
 func testFunc(persister newsroom.Persister) {
@@ -22,7 +24,15 @@ func TestGormInterface(t *testing.T) {
 
 func TestCreateNewsroom(t *testing.T) {
 	creds := testutils.GetTestDBConnection()
-	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+	// Test out the WithDB GormPGPersister constructor
+	db, err := gormutils.NewGormPGConnection(creds.Host, creds.Port, creds.User,
+		creds.Password, creds.Dbname, 2, 2, 10*time.Second)
+	if err != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error creating the db conn")
+	}
+
+	pg, err := newsroom.NewGormPGPersisterWithDB(db)
 
 	if err != nil {
 		fmt.Println(err)
