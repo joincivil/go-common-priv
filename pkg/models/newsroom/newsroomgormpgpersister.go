@@ -158,17 +158,18 @@ func (p *GormPGPersister) GetArticlesForNewsroom(newsroomID uint) ([]article.Art
 	if err := p.DB.Preload("Articles").First(&newsroomGorm, newsroomID).Error; err != nil {
 		return nil, err
 	}
-	articles := make([]article.Article, len(newsroomGorm.Articles))
 
-	for i, a := range newsroomGorm.Articles {
-		convertedArticle, err := a.ConvertToArticle()
-		if err != nil {
-			return nil, err
-		}
-		articles[i] = *convertedArticle
+	return p.convertedArticles(newsroomGorm)
+}
+
+// GetArticlesForNewsroomIndexedSinceDate returns all articles for a newsroom indexed after the date
+func (p *GormPGPersister) GetArticlesForNewsroomIndexedSinceDate(newsroomID uint, date time.Time) ([]article.Article, error) {
+	newsroomGorm := Gorm{}
+	if err := p.DB.Preload("Articles", "indexed_timestamp >= ?", date).First(&newsroomGorm, newsroomID).Error; err != nil {
+		return nil, err
 	}
 
-	return articles, nil
+	return p.convertedArticles(newsroomGorm)
 }
 
 // GetLatestArticleForNewsroom returns the latest article for a newsroom with the given ID
@@ -194,4 +195,17 @@ func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*article
 	}
 
 	return convertedArticle, nil
+}
+
+func (p *GormPGPersister) convertedArticles(newsroomGorm Gorm) ([]article.Article, error) {
+	articles := make([]article.Article, len(newsroomGorm.Articles))
+	for i, a := range newsroomGorm.Articles {
+		convertedArticle, err := a.ConvertToArticle()
+		if err != nil {
+			return nil, err
+		}
+		articles[i] = *convertedArticle
+	}
+
+	return articles, nil
 }

@@ -1,6 +1,8 @@
 package newsroom
 
 import (
+	"time"
+
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 )
 
@@ -20,5 +22,6 @@ type Persister interface {
 	Newsrooms() ([]*Newsroom, error)
 	NewsroomByID(newsroomID uint) (*Newsroom, error)
 	GetArticlesForNewsroom(newsroomID uint) ([]article.Article, error)
+	GetArticlesForNewsroomIndexedSinceDate(newsroomID uint, date time.Time) ([]article.Article, error)
 	GetLatestArticleForNewsroom(newsroomID uint) (*article.Article, error)
 }
