@@ -352,3 +352,108 @@ func TestGetLatestArticleForNewsroom(t *testing.T) {
 		t.Errorf("failed to fetch the latest article: %v", art.ArticleMetadata.Title)
 	}
 }
+
+func TestGetArticlesForNewsroomIndexedSinceDate(t *testing.T) {
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+
+	if err != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error making the persister")
+	}
+
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
+
+	newsrooma := &newsroom.Newsroom{
+		Name:    "Newsroom1",
+		Address: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+	}
+
+	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
+		t.Errorf("should have created a newsroom")
+	}
+
+	arts, err := pg.GetArticlesForNewsroomIndexedSinceDate(newsrooma.ID, time.Now())
+	if err != nil {
+		t.Errorf("shouldn't throw error on empty set %v", err)
+	}
+	if len(arts) != 0 {
+		t.Errorf("shouldn't be any articles")
+	}
+
+	now := time.Now()
+
+	articleMeta := &article.Metadata{
+		Title:        "new stufff latest",
+		CanonicalURL: "https://newstuff.bz/newarticle",
+	}
+
+	narticle := &article.Article{
+		ArticleMetadata:  *articleMeta,
+		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+		IndexedTimestamp: now.Add(30 * time.Second),
+	}
+
+	if err1 := pg.AddArticle(newsrooma.ID, narticle); err1 != nil {
+		t.Errorf("failed to add latest article")
+	}
+
+	articleMeta = &article.Metadata{
+		Title:        "new stufff old",
+		CanonicalURL: "https://newstuff.bz/newarticle",
+	}
+
+	narticle = &article.Article{
+		ArticleMetadata:  *articleMeta,
+		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+		IndexedTimestamp: now.Add(40 * time.Second),
+	}
+
+	if err1 := pg.AddArticle(newsrooma.ID, narticle); err1 != nil {
+		t.Errorf("failed to add old article")
+	}
+
+	articleMeta = &article.Metadata{
+		Title:        "new stufff mid",
+		CanonicalURL: "https://newstuff.bz/newarticle",
+	}
+
+	narticle = &article.Article{
+		ArticleMetadata:  *articleMeta,
+		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+		IndexedTimestamp: now.Add(55),
+	}
+
+	if err1 := pg.AddArticle(newsrooma.ID, narticle); err1 != nil {
+		t.Errorf("failed to add old article")
+	}
+
+	articleMeta = &article.Metadata{
+		Title:        "new stufff mid",
+		CanonicalURL: "https://newstuff.bz/newarticle",
+	}
+
+	narticle = &article.Article{
+		ArticleMetadata:  *articleMeta,
+		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+		IndexedTimestamp: now.Add(-1 * time.Second),
+	}
+
+	if err1 := pg.AddArticle(newsrooma.ID, narticle); err1 != nil {
+		t.Errorf("failed to add old article")
+	}
+
+	art, err := pg.GetArticlesForNewsroomIndexedSinceDate(newsrooma.ID, now)
+	if err != nil {
+		t.Errorf("failed to get latest article: %v", err)
+	}
+
+	if len(art) != 3 {
+		t.Errorf("did not fetch all or only articles indexed after now")
+	}
+}
