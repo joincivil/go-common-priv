@@ -3,8 +3,10 @@ package testutils
 import (
 	"encoding/json"
 	"fmt"
+
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 )
+
 // FakeTxHash is a txhash stub
 const FakeTxHash = "0x47eaee9881eca782dd2a5636a24506c0d5fd75f13824df689c5d8f41b43addf0"
 

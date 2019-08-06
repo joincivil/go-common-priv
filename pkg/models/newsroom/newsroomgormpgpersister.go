@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// NoArticlesErr indicates that there were no articles found for the query
-	NoArticlesErr = errors.New("no articles found")
+	// ErrNoArticles indicates that there were no articles found for the query
+	ErrNoArticles = errors.New("no articles found")
 )
 
 const (
@@ -185,7 +185,7 @@ func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*article
 	}
 
 	if len(newsroomGorm.Articles) == 0 {
-		return nil, NoArticlesErr
+		return nil, ErrNoArticles
 	}
 
 	art := newsroomGorm.Articles[0]

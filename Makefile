@@ -7,6 +7,8 @@ POSTGRES_PSWD=docker
 
 PUBSUB_SIM_DOCKER_IMAGE=kinok/google-pubsub-emulator:latest
 
+GOVERSION=go1.12.7
+
 GOCMD=go
 GOGEN=$(GOCMD) generate
 GORUN=$(GOCMD) run
@@ -19,9 +21,7 @@ GOCOVER=$(GOCMD) tool cover
 GO:=$(shell command -v go 2> /dev/null)
 DOCKER:=$(shell command -v docker 2> /dev/null)
 APT:=$(shell command -v apt-get 2> /dev/null)
-
-# GOMETALINTER_INSTALLER=scripts/gometalinter_install.sh
-# GOMETALINTER_VERSION_TAG=v2.0.11
+GOVERCURRENT=$(shell go version |awk {'print $$3'})
 
 # curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin vX.Y.Z
 GOLANGCILINT_URL=https://install.goreleaser.com/github.com/golangci/golangci-lint.sh
@@ -35,6 +35,9 @@ ifndef GO
 endif
 ifndef GOPATH
 	$(error GOPATH is not set)
+endif
+ifneq ($(GOVERCURRENT), $(GOVERSION))
+	$(error Incorrect go version, needs $(GOVERSION))
 endif
 
 ## NOTE: If installing on a Mac, use Docker for Mac, not Docker toolkit
@@ -52,7 +55,6 @@ install-dep: check-go-env ## Installs dep
 
 .PHONY: install-linter
 install-linter: check-go-env ## Installs linter
-	# sh $(GOMETALINTER_INSTALLER) -b $(GOPATH)/bin $(GOMETALINTER_VERSION_TAG)
 	@curl -sfL $(GOLANGCILINT_URL) | sh -s -- -b $(shell go env GOPATH)/bin $(GOLANGCILINT_VERSION_TAG)
 ifdef APT
 	@sudo apt-get install golang-race-detector-runtime || true
@@ -113,19 +115,19 @@ postgres-stop: check-docker-env ## Stops the development PostgreSQL server
 
 ## golangci-lint config in .golangci.yml
 .PHONY: lint
-lint: ## Runs linting.
+lint: check-go-env  ## Runs linting.
 	@golangci-lint run ./...
 
 .PHONY: build
-build: ## Builds the repo, mainly to ensure all the files will build properly
+build: check-go-env ## Builds the repo, mainly to ensure all the files will build properly
 	$(GOBUILD) ./...
 
 .PHONY: test
-test: ## Runs unit tests and tests code coverage
+test: check-go-env ## Runs unit tests and tests code coverage
 	@echo 'mode: atomic' > coverage.txt && $(GOTEST) -covermode=atomic -coverprofile=coverage.txt -v -race -timeout=60s ./...
 
 .PHONY: test-integration
-test-integration: ## Runs tagged integration tests
+test-integration: check-go-env ## Runs tagged integration tests
 	@echo 'mode: atomic' > coverage.txt && PUBSUB_EMULATOR_HOST=localhost:8042 $(GOTEST) -covermode=atomic -coverprofile=coverage.txt -v -race -timeout=60s -tags=integration ./...
 
 .PHONY: cover
