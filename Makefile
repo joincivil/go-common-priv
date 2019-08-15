@@ -68,29 +68,13 @@ endif
 install-cover: check-go-env ## Installs code coverage tool
 	@gobin -u golang.org/x/tools/cmd/cover
 
-.PHONY: install-gorunpkg
-install-gorunpkg: ## Installs the gorunpkg command
-	@gobin -u github.com/vektah/gorunpkg
-
-.PHONY: install-gorm
-install-gorm: ## Installs gorm package
-	@$(GOGET) -u github.com/jinzhu/gorm
-
-.PHONY: install-gormmigrate
-install-gormmigrate:
-	@$(GOGET) -u gopkg.in/gormigrate.v1
-
-.PHONY: install-pq
-install-pq: ## Installs gorm package
-	@$(GOGET) -u github.com/lib/pq
-
 .PHONY: setup-githooks
 setup-githooks: ## Setups any git hooks in githooks
 	@curl -sfL https://raw.githubusercontent.com/joincivil/go-common/master/githooks/commit-msg -o .git/hooks/commit-msg
 	@chmod 755 .git/hooks/commit-msg
 
 .PHONY: setup
-setup: check-go-env install-conform install-linter install-cover install-gorunpkg install-pq install-gorm install-gormmigrate setup-githooks ## Sets up the tooling.
+setup: check-go-env install-conform install-linter install-cover setup-githooks ## Sets up the tooling.
 
 .PHONY: postgres-setup-launch
 postgres-setup-launch:
