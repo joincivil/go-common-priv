@@ -48,10 +48,14 @@ ifndef DOCKER
 	$(error docker command is not installed or in PATH)
 endif
 
-.PHONY: install-dep
-install-dep: check-go-env ## Installs dep
-	@mkdir -p $(GOPATH)/bin
-	@curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+.PHONY: install-gobin
+install-gobin: check-go-env ## Installs gobin tool
+	@GO111MODULE=off go get -u github.com/myitcv/gobin
+
+# Use commit until they cut a release with our fix
+.PHONY: install-conform
+install-conform: install-gobin ## Installs conform
+	@gobin github.com/autonomy/conform@7bed9129bc73b5a6fd2b6d8c12f7c024ea4b7107
 
 .PHONY: install-linter
 install-linter: check-go-env ## Installs linter
@@ -62,26 +66,15 @@ endif
 
 .PHONY: install-cover
 install-cover: check-go-env ## Installs code coverage tool
-	@$(GOGET) -u golang.org/x/tools/cmd/cover
+	@gobin -u golang.org/x/tools/cmd/cover
 
-.PHONY: install-gorunpkg
-install-gorunpkg: ## Installs the gorunpkg command
-	@$(GOGET) -u github.com/vektah/gorunpkg
-
-.PHONY: install-gorm
-install-gorm: ## Installs gorm package
-	@$(GOGET) -u github.com/jinzhu/gorm
-
-.PHONY: install-gormmigrate
-install-gormmigrate:
-	@$(GOGET) -u gopkg.in/gormigrate.v1
-
-.PHONY: install-pq
-install-pq: ## Installs gorm package
-	@$(GOGET) -u github.com/lib/pq
+.PHONY: setup-githooks
+setup-githooks: ## Setups any git hooks in githooks
+	@curl -sfL https://raw.githubusercontent.com/joincivil/go-common/master/githooks/commit-msg -o .git/hooks/commit-msg
+	@chmod 755 .git/hooks/commit-msg
 
 .PHONY: setup
-setup: check-go-env install-dep install-linter install-cover install-gorunpkg install-pq install-gorm install-gormmigrate ## Sets up the tooling.
+setup: check-go-env install-conform install-linter install-cover setup-githooks ## Sets up the tooling.
 
 .PHONY: postgres-setup-launch
 postgres-setup-launch:
@@ -117,6 +110,10 @@ postgres-stop: check-docker-env ## Stops the development PostgreSQL server
 .PHONY: lint
 lint: check-go-env  ## Runs linting.
 	@golangci-lint run ./...
+
+.PHONY: conform
+conform: check-go-env ## Runs conform (commit message linting)
+	@conform enforce
 
 .PHONY: build
 build: check-go-env ## Builds the repo, mainly to ensure all the files will build properly
