@@ -8,6 +8,7 @@ import (
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
+	carticle "github.com/joincivil/go-common/pkg/article"
 
 	gormutils "github.com/joincivil/go-common-priv/pkg/utils/gorm"
 )
@@ -46,12 +47,12 @@ func TestCreateArticle(t *testing.T) {
 
 	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
-	articleMeta := &article.Metadata{
+	articleMeta := &carticle.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle := &article.Article{
+	narticle := &carticle.Article{
 		ArticleMetadata: *articleMeta,
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
@@ -83,12 +84,12 @@ func TestArticleByID(t *testing.T) {
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
 
-	articleMeta := &article.Metadata{
+	articleMeta := &carticle.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle := &article.Article{
+	narticle := &carticle.Article{
 		ArticleMetadata: *articleMeta,
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
@@ -123,12 +124,12 @@ func TestUpdateArticle(t *testing.T) {
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
 
-	articleMeta := &article.Metadata{
+	articleMeta := &carticle.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle := &article.Article{
+	narticle := &carticle.Article{
 		ArticleMetadata: *articleMeta,
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
