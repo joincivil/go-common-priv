@@ -9,6 +9,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/gorm/dialects/postgres"
+	carticle "github.com/joincivil/go-common/pkg/article"
 	"github.com/pkg/errors"
 )
 
@@ -35,8 +36,8 @@ func (Gorm) TableName() string {
 }
 
 // ConvertToArticle returns the gorm struct as the public article struct
-func (a *Gorm) ConvertToArticle() (*Article, error) {
-	article := &Article{}
+func (a *Gorm) ConvertToArticle() (*carticle.Article, error) {
+	article := &carticle.Article{}
 	// if it fails it probably hasnt been added yet, do nothing
 	blockdata := ethTypes.Receipt{}
 	if err := json.Unmarshal(a.BlockData.RawMessage, &blockdata); err == nil {
@@ -44,7 +45,7 @@ func (a *Gorm) ConvertToArticle() (*Article, error) {
 	}
 
 	// if it fails it probably hasnt been added yet, do nothing
-	metadata := Metadata{}
+	metadata := carticle.Metadata{}
 	if err := json.Unmarshal(a.ArticleMetadata.RawMessage, &metadata); err == nil {
 		article.ArticleMetadata = metadata
 	}
@@ -58,7 +59,7 @@ func (a *Gorm) ConvertToArticle() (*Article, error) {
 }
 
 // PopulateFromArticle takes an article struct and maps its properties onto a gorm struct
-func (a *Gorm) PopulateFromArticle(article *Article) error {
+func (a *Gorm) PopulateFromArticle(article *carticle.Article) error {
 	metaJSON, metaerr := json.Marshal(article.ArticleMetadata)
 	if metaerr != nil {
 		return metaerr
@@ -111,7 +112,7 @@ func NewGormPGPersisterWithDB(db *gorm.DB) (*GormPGPersister, error) {
 }
 
 // ArticleByID finds an article by its ID
-func (p *GormPGPersister) ArticleByID(articleID uint) (*Article, error) {
+func (p *GormPGPersister) ArticleByID(articleID uint) (*carticle.Article, error) {
 	articleGorm := &Gorm{}
 	if err := p.DB.First(articleGorm, articleID).Error; err != nil {
 		return nil, err
@@ -121,7 +122,7 @@ func (p *GormPGPersister) ArticleByID(articleID uint) (*Article, error) {
 }
 
 // CreateArticle saves an article to the db
-func (p *GormPGPersister) CreateArticle(article *Article) error {
+func (p *GormPGPersister) CreateArticle(article *carticle.Article) error {
 	metaJSON, err := json.Marshal(article.ArticleMetadata)
 	if err != nil {
 		return err
@@ -142,7 +143,7 @@ func (p *GormPGPersister) CreateArticle(article *Article) error {
 }
 
 // UpdateArticle saves updates to an article stuct
-func (p *GormPGPersister) UpdateArticle(article *Article) error {
+func (p *GormPGPersister) UpdateArticle(article *carticle.Article) error {
 	articleGorm := Gorm{}
 
 	if err := articleGorm.PopulateFromArticle(article); err != nil {

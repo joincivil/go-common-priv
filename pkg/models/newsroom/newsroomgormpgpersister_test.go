@@ -5,11 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/joincivil/go-common-priv/pkg/models/article"
 	"github.com/joincivil/go-common-priv/pkg/models/newsroom"
 	"github.com/joincivil/go-common-priv/pkg/models/testutils"
-
 	gormutils "github.com/joincivil/go-common-priv/pkg/utils/gorm"
+	carticle "github.com/joincivil/go-common/pkg/article"
 )
 
 func testFunc(persister newsroom.Persister) {
@@ -125,12 +124,12 @@ func TestAddArticle(t *testing.T) {
 		t.Errorf("should have created a newsroom")
 	}
 
-	articleMeta := &article.Metadata{
+	articleMeta := &carticle.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle := &article.Article{
+	narticle := &carticle.Article{
 		ArticleMetadata: *articleMeta,
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
@@ -298,13 +297,13 @@ func TestGetLatestArticleForNewsroom(t *testing.T) {
 
 	now := time.Now()
 
-	articleMeta := &article.Metadata{
+	articleMeta := &carticle.Metadata{
 		Title:        "new stufff latest",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 		RevisionDate: now.Add(30 * time.Second),
 	}
 
-	narticle := &article.Article{
+	narticle := &carticle.Article{
 		ArticleMetadata: *articleMeta,
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
@@ -313,13 +312,13 @@ func TestGetLatestArticleForNewsroom(t *testing.T) {
 		t.Errorf("failed to add latest article")
 	}
 
-	articleMeta = &article.Metadata{
+	articleMeta = &carticle.Metadata{
 		Title:        "new stufff old",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 		RevisionDate: now,
 	}
 
-	narticle = &article.Article{
+	narticle = &carticle.Article{
 		ArticleMetadata: *articleMeta,
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
@@ -328,13 +327,13 @@ func TestGetLatestArticleForNewsroom(t *testing.T) {
 		t.Errorf("failed to add old article")
 	}
 
-	articleMeta = &article.Metadata{
+	articleMeta = &carticle.Metadata{
 		Title:        "new stufff mid",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 		RevisionDate: now.Add(15 * time.Second),
 	}
 
-	narticle = &article.Article{
+	narticle = &carticle.Article{
 		ArticleMetadata: *articleMeta,
 		NewsroomAddress: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 	}
@@ -388,12 +387,12 @@ func TestGetArticlesForNewsroomIndexedSinceDate(t *testing.T) {
 
 	now := time.Now()
 
-	articleMeta := &article.Metadata{
+	articleMeta := &carticle.Metadata{
 		Title:        "new stufff latest",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle := &article.Article{
+	narticle := &carticle.Article{
 		ArticleMetadata:  *articleMeta,
 		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 		IndexedTimestamp: now.Add(30 * time.Second),
@@ -403,12 +402,12 @@ func TestGetArticlesForNewsroomIndexedSinceDate(t *testing.T) {
 		t.Errorf("failed to add latest article")
 	}
 
-	articleMeta = &article.Metadata{
+	articleMeta = &carticle.Metadata{
 		Title:        "new stufff old",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle = &article.Article{
+	narticle = &carticle.Article{
 		ArticleMetadata:  *articleMeta,
 		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 		IndexedTimestamp: now.Add(40 * time.Second),
@@ -418,12 +417,12 @@ func TestGetArticlesForNewsroomIndexedSinceDate(t *testing.T) {
 		t.Errorf("failed to add old article")
 	}
 
-	articleMeta = &article.Metadata{
+	articleMeta = &carticle.Metadata{
 		Title:        "new stufff mid",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle = &article.Article{
+	narticle = &carticle.Article{
 		ArticleMetadata:  *articleMeta,
 		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 		IndexedTimestamp: now.Add(55),
@@ -433,12 +432,12 @@ func TestGetArticlesForNewsroomIndexedSinceDate(t *testing.T) {
 		t.Errorf("failed to add old article")
 	}
 
-	articleMeta = &article.Metadata{
+	articleMeta = &carticle.Metadata{
 		Title:        "new stufff mid",
 		CanonicalURL: "https://newstuff.bz/newarticle",
 	}
 
-	narticle = &article.Article{
+	narticle = &carticle.Article{
 		ArticleMetadata:  *articleMeta,
 		NewsroomAddress:  "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
 		IndexedTimestamp: now.Add(-1 * time.Second),

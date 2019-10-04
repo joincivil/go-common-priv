@@ -6,6 +6,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/joincivil/go-common-priv/pkg/models/article"
+	carticle "github.com/joincivil/go-common/pkg/article"
 	"github.com/pkg/errors"
 )
 
@@ -95,7 +96,7 @@ func (p *GormPGPersister) UpdateNewsroom(newsroom *Newsroom) error {
 }
 
 // AddArticle adds an article to a newsroom with the given ID
-func (p *GormPGPersister) AddArticle(newsroomID uint, newArticle *article.Article) error {
+func (p *GormPGPersister) AddArticle(newsroomID uint, newArticle *carticle.Article) error {
 	newsroomGorm := Gorm{}
 
 	articleGorm := article.Gorm{}
@@ -152,7 +153,7 @@ func (p *GormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error) {
 }
 
 // GetArticlesForNewsroom returns all the articles for a newsroom with the given ID
-func (p *GormPGPersister) GetArticlesForNewsroom(newsroomID uint) ([]article.Article, error) {
+func (p *GormPGPersister) GetArticlesForNewsroom(newsroomID uint) ([]carticle.Article, error) {
 	newsroomGorm := Gorm{}
 
 	if err := p.DB.Preload("Articles").First(&newsroomGorm, newsroomID).Error; err != nil {
@@ -163,7 +164,7 @@ func (p *GormPGPersister) GetArticlesForNewsroom(newsroomID uint) ([]article.Art
 }
 
 // GetArticlesForNewsroomIndexedSinceDate returns all articles for a newsroom indexed after the date
-func (p *GormPGPersister) GetArticlesForNewsroomIndexedSinceDate(newsroomID uint, date time.Time) ([]article.Article, error) {
+func (p *GormPGPersister) GetArticlesForNewsroomIndexedSinceDate(newsroomID uint, date time.Time) ([]carticle.Article, error) {
 	newsroomGorm := Gorm{}
 	if err := p.DB.Preload("Articles", "indexed_timestamp >= ?", date).First(&newsroomGorm, newsroomID).Error; err != nil {
 		return nil, err
@@ -173,7 +174,7 @@ func (p *GormPGPersister) GetArticlesForNewsroomIndexedSinceDate(newsroomID uint
 }
 
 // GetLatestArticleForNewsroom returns the latest article for a newsroom with the given ID
-func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*article.Article, error) {
+func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*carticle.Article, error) {
 	newsroomGorm := Gorm{}
 
 	sortFunc := func(db *gorm.DB) *gorm.DB {
@@ -197,8 +198,8 @@ func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*article
 	return convertedArticle, nil
 }
 
-func (p *GormPGPersister) convertedArticles(newsroomGorm Gorm) ([]article.Article, error) {
-	articles := make([]article.Article, len(newsroomGorm.Articles))
+func (p *GormPGPersister) convertedArticles(newsroomGorm Gorm) ([]carticle.Article, error) {
+	articles := make([]carticle.Article, len(newsroomGorm.Articles))
 	for i, a := range newsroomGorm.Articles {
 		convertedArticle, err := a.ConvertToArticle()
 		if err != nil {
