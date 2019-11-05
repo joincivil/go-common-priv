@@ -47,6 +47,11 @@ func TestCreateArticle(t *testing.T) {
 
 	testutils.MigrateModels(pg.DB) // nolint: errcheck
 
+	err = pg.ArticleRawJSONIndex()
+	if err != nil {
+		t.Errorf("should not have returned error adding index")
+	}
+
 	articleMeta := &carticle.Metadata{
 		Title:        "new stufff",
 		CanonicalURL: "https://newstuff.bz/newarticle",

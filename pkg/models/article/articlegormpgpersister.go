@@ -27,7 +27,7 @@ type Gorm struct {
 	ArticleMetadata  postgres.Jsonb
 	NewsroomAddress  string
 	IndexedTimestamp time.Time
-	RawJSON          postgres.Jsonb
+	RawJSON          postgres.Jsonb `gorm:"column:raw_json"`
 }
 
 // TableName sets the name of the corresponding table in the db
@@ -109,6 +109,19 @@ func NewGormPGPersisterWithDB(db *gorm.DB) (*GormPGPersister, error) {
 	newsroomGormPGPersister := &GormPGPersister{}
 	newsroomGormPGPersister.DB = db
 	return newsroomGormPGPersister, nil
+}
+
+// ArticleRawJSONIndex adds an GIN index to the article raw_json field.  Adding GIN indices
+// is not supported by gorm, so need to add it on table setup.
+func (p *GormPGPersister) ArticleRawJSONIndex() error {
+	tblName := Gorm{}.TableName()
+	indexName := "idx_" + tblName + "_raw_json"
+	indexQuery := fmt.Sprintf(
+		"CREATE INDEX IF NOT EXISTS %s ON %s USING gin (raw_json)",
+		indexName,
+		tblName,
+	)
+	return p.DB.Exec(indexQuery).Error
 }
 
 // ArticleByID finds an article by its ID
