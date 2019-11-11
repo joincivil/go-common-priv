@@ -1,13 +1,18 @@
 package newsroom
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
+	log "github.com/golang/glog"
+
 	"github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/pkg/errors"
+
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	carticle "github.com/joincivil/go-common/pkg/article"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -26,7 +31,8 @@ const (
 type Gorm struct {
 	gorm.Model
 	Name     string
-	Address  string         `gorm:"unique;not null"`
+	Address  string `gorm:"unique;not null"`
+	Meta     postgres.Jsonb
 	Articles []article.Gorm `gorm:"foreignkey:NewsroomAddress;association_foreignkey:Address"`
 }
 
@@ -66,9 +72,15 @@ func NewGormPGPersisterWithDB(db *gorm.DB) (*GormPGPersister, error) {
 
 // CreateNewsroom takes a newsroom struct and saves it to the db
 func (p *GormPGPersister) CreateNewsroom(newsroom *Newsroom) error {
+	bys, err := json.Marshal(newsroom.Meta)
+	if err != nil {
+		return errors.Wrap(err, "error marshalling metadata")
+	}
+
 	newsroomGorm := Gorm{
 		Name:    newsroom.Name,
 		Address: newsroom.Address,
+		Meta:    postgres.Jsonb{RawMessage: bys},
 	}
 
 	if err := p.DB.Create(&newsroomGorm).Error; err != nil {
@@ -91,7 +103,13 @@ func (p *GormPGPersister) UpdateNewsroom(newsroom *Newsroom) error {
 	newsroomGorm.Name = newsroom.Name
 	newsroomGorm.Address = newsroom.Address
 
-	err := p.DB.Save(&newsroomGorm).Error
+	bys, err := json.Marshal(newsroom.Meta)
+	if err != nil {
+		return errors.Wrap(err, "error marshalling metadata")
+	}
+	newsroomGorm.Meta = postgres.Jsonb{RawMessage: bys}
+
+	err = p.DB.Save(&newsroomGorm).Error
 	return err
 }
 
@@ -130,6 +148,15 @@ func (p *GormPGPersister) Newsrooms() ([]*Newsroom, error) {
 		newsroom.Name = nr.Name
 		newsroom.Address = nr.Address
 
+		// Convert meta to map
+		var meta *Meta
+		err := json.Unmarshal(nr.Meta.RawMessage, &meta)
+		if err != nil {
+			log.Errorf("error unmarshalling meta: err: %v", err)
+			continue
+		}
+		newsroom.Meta = meta
+
 		newsrooms[ind] = newsroom
 	}
 
@@ -148,6 +175,13 @@ func (p *GormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error) {
 	newsroom.ID = newsroomGorm.ID
 	newsroom.Name = newsroomGorm.Name
 	newsroom.Address = newsroomGorm.Address
+
+	var meta *Meta
+	err := json.Unmarshal(newsroomGorm.Meta.RawMessage, &meta)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling meta")
+	}
+	newsroom.Meta = meta
 
 	return newsroom, nil
 }

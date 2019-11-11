@@ -45,9 +45,15 @@ func TestCreateNewsroom(t *testing.T) {
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
 
+	meta := &newsroom.Meta{
+		Index: true,
+		Claim: false,
+	}
+
 	newsrooma := &newsroom.Newsroom{
 		Name:    "Newsroom1",
 		Address: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+		Meta:    meta,
 	}
 
 	if newsrooma.ID != 0 {
@@ -166,9 +172,15 @@ func TestNewsrooms(t *testing.T) {
 	cleaner := testutils.DeleteCreatedEntities(pg.DB)
 	defer cleaner()
 
+	meta := &newsroom.Meta{
+		Index: true,
+		Claim: false,
+	}
+
 	newsrooma := &newsroom.Newsroom{
 		Name:    "Newsroom1",
 		Address: "0x8c722B8AC728aDd7780a66017e8daDBa530EE261",
+		Meta:    meta,
 	}
 
 	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
@@ -207,6 +219,15 @@ func TestNewsrooms(t *testing.T) {
 	}
 	if newsrooms[0].Address != "0x8c722B8AC728aDd7780a66017e8daDBa530EE261" {
 		t.Errorf("should have gotten Newsroom1 address")
+	}
+	if newsrooms[0].Meta == nil {
+		t.Errorf("should have gotten meta for Newsroom1 address")
+	}
+	if !newsrooms[0].Meta.Index {
+		t.Errorf("should have gotten correct index meta value for Newsroom1")
+	}
+	if newsrooms[0].Meta.Claim {
+		t.Errorf("should have gotten correct claim meta value for Newsroom1")
 	}
 	if newsrooms[1].Name != "Newsroom2" {
 		t.Errorf("should have gotten Newsroom2")
