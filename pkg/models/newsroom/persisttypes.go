@@ -31,6 +31,7 @@ type Persister interface {
 	AddArticle(newsroomID uint, article *carticle.Article) error
 	Newsrooms() ([]*Newsroom, error)
 	NewsroomByID(newsroomID uint) (*Newsroom, error)
+	NewsroomByAddress(addr string) (*Newsroom, error)
 	GetArticlesForNewsroom(newsroomID uint) ([]carticle.Article, error)
 	GetArticlesForNewsroomIndexedSinceDate(newsroomID uint, date time.Time) ([]carticle.Article, error)
 	GetLatestArticleForNewsroom(newsroomID uint) (*carticle.Article, error)

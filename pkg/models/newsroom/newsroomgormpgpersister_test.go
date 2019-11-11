@@ -2,6 +2,7 @@ package newsroom_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -232,13 +233,13 @@ func TestNewsrooms(t *testing.T) {
 	if newsrooms[1].Name != "Newsroom2" {
 		t.Errorf("should have gotten Newsroom2")
 	}
-	if newsrooms[1].Address != "0x9c722B8AF728aDd7780a66017e8daDBa530EE261" {
+	if newsrooms[1].Address != "0x9c722b8Af728aDD7780A66017e8daDba530eE261" {
 		t.Errorf("should have gotten Newsroom2 address")
 	}
 	if newsrooms[2].Name != "Newsroom3" {
 		t.Errorf("should have gotten Newsroom3")
 	}
-	if newsrooms[2].Address != "0x9d822B8AF728aDd7780a66017e8daDBa530EE261" {
+	if newsrooms[2].Address != "0x9d822b8aF728AdD7780a66017E8dadBA530ee261" {
 		t.Errorf("should have gotten Newsroom3 address")
 	}
 
@@ -277,6 +278,50 @@ func TestNewsroomByID(t *testing.T) {
 	}
 
 	if foundNewsroom.Address != "0x8c722B8AC728aDd7780a66017e8daDBa530EE261" {
+		t.Errorf("newsroom data is incorrect")
+	}
+
+	if foundNewsroom.ID != newsrooma.ID {
+		t.Errorf("isn't the same newsroom")
+	}
+
+}
+
+func TestNewsroomByAddress(t *testing.T) {
+	creds := testutils.GetTestDBConnection()
+	pg, err := newsroom.NewGormPGPersister(creds.Host, creds.Port, creds.User, creds.Password, creds.Dbname)
+
+	if err != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error making the persister")
+	}
+
+	testutils.MigrateModels(pg.DB) // nolint: errcheck
+
+	defer pg.DB.Close()
+
+	cleaner := testutils.DeleteCreatedEntities(pg.DB)
+	defer cleaner()
+
+	addr := "0x8c722B8AC728aDd7780a66017e8daDBa530EE261"
+
+	newsrooma := &newsroom.Newsroom{
+		Name:    "Newsroom1",
+		Address: strings.ToLower(addr), // Test normalization
+	}
+
+	if err1 := pg.CreateNewsroom(newsrooma); err1 != nil {
+		t.Errorf("should have created a newsroom")
+	}
+
+	foundNewsroom, lookuperr := pg.NewsroomByAddress(addr)
+
+	if lookuperr != nil {
+		fmt.Println(err)
+		t.Errorf("threw an error looking up the newsroom")
+	}
+
+	if foundNewsroom.Address != addr {
 		t.Errorf("newsroom data is incorrect")
 	}
 
