@@ -13,6 +13,7 @@ import (
 
 	"github.com/joincivil/go-common-priv/pkg/models/article"
 	carticle "github.com/joincivil/go-common/pkg/article"
+	ceth "github.com/joincivil/go-common/pkg/eth"
 )
 
 var (
@@ -79,7 +80,7 @@ func (p *GormPGPersister) CreateNewsroom(newsroom *Newsroom) error {
 
 	newsroomGorm := Gorm{
 		Name:    newsroom.Name,
-		Address: newsroom.Address,
+		Address: ceth.NormalizeEthAddress(newsroom.Address),
 		Meta:    postgres.Jsonb{RawMessage: bys},
 	}
 
@@ -101,7 +102,7 @@ func (p *GormPGPersister) UpdateNewsroom(newsroom *Newsroom) error {
 	}
 
 	newsroomGorm.Name = newsroom.Name
-	newsroomGorm.Address = newsroom.Address
+	newsroomGorm.Address = ceth.NormalizeEthAddress(newsroom.Address)
 
 	bys, err := json.Marshal(newsroom.Meta)
 	if err != nil {
@@ -168,6 +169,30 @@ func (p *GormPGPersister) NewsroomByID(newsroomID uint) (*Newsroom, error) {
 	newsroomGorm := Gorm{}
 
 	if err := p.DB.First(&newsroomGorm, newsroomID).Error; err != nil {
+		return nil, err
+	}
+
+	newsroom := &Newsroom{}
+	newsroom.ID = newsroomGorm.ID
+	newsroom.Name = newsroomGorm.Name
+	newsroom.Address = newsroomGorm.Address
+
+	var meta *Meta
+	err := json.Unmarshal(newsroomGorm.Meta.RawMessage, &meta)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling meta")
+	}
+	newsroom.Meta = meta
+
+	return newsroom, nil
+}
+
+// NewsroomByAddress returns the newsroom with the given eth address if its found
+func (p *GormPGPersister) NewsroomByAddress(addr string) (*Newsroom, error) {
+	newsroomGorm := Gorm{}
+
+	normalizedAddr := ceth.NormalizeEthAddress(addr)
+	if err := p.DB.Where("address = ?", normalizedAddr).First(&newsroomGorm).Error; err != nil {
 		return nil, err
 	}
 
