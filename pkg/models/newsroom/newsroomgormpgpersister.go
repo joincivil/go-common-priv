@@ -237,7 +237,7 @@ func (p *GormPGPersister) GetLatestArticleForNewsroom(newsroomID uint) (*carticl
 	newsroomGorm := Gorm{}
 
 	sortFunc := func(db *gorm.DB) *gorm.DB {
-		return db.Limit(1).Order("articles.article_metadata->>'RevisionDate' DESC")
+		return db.Limit(1).Order("articles.article_metadata->>'OriginalPublishDate' DESC")
 	}
 
 	if err := p.DB.Preload("Articles", sortFunc).First(&newsroomGorm, newsroomID).Error; err != nil {
